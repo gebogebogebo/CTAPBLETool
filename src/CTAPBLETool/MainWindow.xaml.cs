@@ -165,14 +165,14 @@ namespace CTAPBLETool
                 addLog($"send Command...");
                 addLog($"{BitConverter.ToString(command)}");
 
+                ReceveData = new List<byte>();
+
                 var result = await Characteristic_Send.WriteValueAsync(command.AsBuffer(), GattWriteOption.WriteWithResponse);
                 if (result != GattCommunicationStatus.Success) {
                     // error
                     return (false);
                 }
-
-                ReceveData = new List<byte>();
-
+                ret = true;
             } catch (Exception ex) {
                 addLog($"Exception...{ex.Message})");
             }

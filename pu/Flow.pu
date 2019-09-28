@@ -1,0 +1,32 @@
+@startuml
+title Flow
+hide footbox
+
+participant "**AllinPass**\n\nBLE Peripheral\nFIDO2 Authenticator" as Authenticator
+participant "**WPF App**\n\nBLE Central\nFIDO2 Platform"  as Platform
+
+group 接続
+    note over Platform : アドバタイズパケットのスキャン開始
+    note over Authenticator : 本体サイドのボタンを押して\nBLE通信開始
+    Authenticator --> Platform:Advertise Packet
+    note over Platform : アドバタイスパケットの受信イベント
+    note over Platform : FIDOサービスのチェック
+    note over Platform : BLEデバイスに接続
+    Authenticator <-- Platform:Connect -> Paired
+    note over Platform : 受信、送信設定
+end group
+
+|||
+
+group 通信(繰り返し)
+    Authenticator <-- Platform:CTAPコマンド送信
+    Authenticator --> Platform:応答受信
+end group
+
+|||
+
+group 切断
+    Authenticator <-- Platform:切断
+end group
+
+@enduml
