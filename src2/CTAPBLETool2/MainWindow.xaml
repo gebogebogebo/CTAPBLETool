@@ -1,0 +1,20 @@
+﻿<Window x:Class="CTAPBLETool2.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:CTAPBLETool2"
+        mc:Ignorable="d"
+        Title="CTAP BLE Tool" Height="702" Width="607">
+    <Grid>
+        <TextBox x:Name="textLog" Margin="10,50,10,10" TextWrapping="Wrap" Text="" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" FontFamily="MS Gothic"/>
+
+        <Button x:Name="buttonScan" Content="Scan" HorizontalAlignment="Left" Height="30" Margin="10,10,0,0" VerticalAlignment="Top" Width="70" Click="ButtonScan_Click" />
+        <Button x:Name="buttonDiscon" Content="Disconnect" HorizontalAlignment="Left" Height="30" Margin="349,10,0,0" VerticalAlignment="Top" Width="70" Click="ButtonDiscon_Click"  />
+        <Button x:Name="buttonGetInfo" Content="GetInfo" HorizontalAlignment="Left" Height="30" Margin="85,10,0,0" VerticalAlignment="Top" Width="70" Click="ButtonGetInfo_Click"  />
+        <Button x:Name="buttonReceiveData" Content="ReceiveData" HorizontalAlignment="Left" Height="30" Margin="489,10,0,0" VerticalAlignment="Top" Width="100" Click="ButtonReceiveData_Click"  />
+        <Button x:Name="buttonMakeCredential" Content="MakeCredential" HorizontalAlignment="Left" Height="30" Margin="160,10,0,0" VerticalAlignment="Top" Width="96" Click="ButtonMakeCredential_Click" />
+        <Button x:Name="buttonGetAssertion" Content="GetAssertion" HorizontalAlignment="Left" Height="30" Margin="261,10,0,0" VerticalAlignment="Top" Width="83" Click="ButtonGetAssertion_Click" />
+
+    </Grid>
+</Window>
