@@ -1,1 +1,11 @@
 # CTAPBLETool
+- src
+  - Visual Studio 2019
+  - WPF Application(.net Framework)
+  - .net Framework 4.6
+  - app.manifest
+    - requestedExecutionLevel level="requireAdministrator"
+  - Manually add WinRT API
+    - [UwpDesktopでわけのわからないエラーが出るようになってしまったメモ](https://qiita.com/gebo/items/d625d77c720403d31db9)
+- bin
+  - Release Build Module
