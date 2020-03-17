@@ -71,85 +71,91 @@ namespace CTAPBLETool
 
         public async void CheckArgs(BluetoothLEAdvertisementReceivedEventArgs args)
         {
-            Console.WriteLine("★Scan");
+            try {
+                Console.WriteLine("★Scan");
 
-            // console log
-            DebugMethods.OutputLog(args);
+                // console log
+                DebugMethods.OutputLog(args);
 
-            // FIDOサービスを検索
-            var fidoServiceUuid = new Guid("0000fffd-0000-1000-8000-00805f9b34fb");
-            if (args.Advertisement.ServiceUuids.Contains(fidoServiceUuid) == false) {
-                return;
-            }
-
-            // 発見
-            addLog("Scan FIDO Device");
-            this.AdvWatcher.Stop();
-
-            // connect
-            {
-                addLog("Conncect FIDO Device");
-                BleDevice = await BluetoothLEDevice.FromBluetoothAddressAsync(args.BluetoothAddress);
-                DebugMethods.OutputLog(BleDevice);
-            }
-
-            // FIDOのサービスをGET
-            {
-                addLog("Connect FIDO Service");
-                var services = await BleDevice.GetGattServicesForUuidAsync(fidoServiceUuid);
-                if (services.Services.Count <= 0) {
-                    // サービス無し
-                    addLog("Error Connect FIDO Service");
+                // FIDOサービスを検索
+                var fidoServiceUuid = new Guid("0000fffd-0000-1000-8000-00805f9b34fb");
+                if (args.Advertisement.ServiceUuids.Contains(fidoServiceUuid) == false) {
                     return;
                 }
-                Service_Fido = services.Services.First();
-            }
 
-            // Characteristicアクセス
-            // - コマンド送信ハンドラ設定
-            // - 応答受信ハンドラ設定
-            {
-                // FIDO Service Revision(Read)
-                await DebugMethods.OutputLog(Service_Fido, GattCharacteristicUuids.SoftwareRevisionString);
+                // 発見
+                addLog("Scan FIDO Device");
 
-                // FIDO Control Point Length(Read-2byte)
-                await DebugMethods.OutputLog(Service_Fido, new Guid("F1D0FFF3-DEAA-ECEE-B42F-C9BA7ED623BB"));
+                this.AdvWatcher.Stop();
 
-                // FIDO Service Revision Bitfield(Read/Write-1+byte)
-                await DebugMethods.OutputLog(Service_Fido, new Guid("F1D0FFF4-DEAA-ECEE-B42F-C9BA7ED623BB"));
-
-                // FIDO Status(Notiry) 受信データ
+                // connect
                 {
-                    var characteristics = await Service_Fido.GetCharacteristicsForUuidAsync(new Guid("F1D0FFF2-DEAA-ECEE-B42F-C9BA7ED623BB"));
-                    if (characteristics.Characteristics.Count > 0) {
-                        this.Characteristic_Receive = characteristics.Characteristics.First();
-                        if (this.Characteristic_Receive == null) {
-                            Console.WriteLine("Characteristicに接続できない...");
-                        } else {
-                            if (this.Characteristic_Receive.CharacteristicProperties.HasFlag(GattCharacteristicProperties.Notify)) {
-                                // イベントハンドラ追加
-                                this.Characteristic_Receive.ValueChanged += characteristicChanged_OnReceiveFromDevice;
+                    addLog("Conncect FIDO Device");
+                    BleDevice = await BluetoothLEDevice.FromBluetoothAddressAsync(args.BluetoothAddress);
+                    DebugMethods.OutputLog(BleDevice);
+                }
 
-                                // これで有効になる
-                                await this.Characteristic_Receive.WriteClientCharacteristicConfigurationDescriptorAsync(GattClientCharacteristicConfigurationDescriptorValue.Notify);
+                // FIDOのサービスをGET
+                {
+                    addLog("Connect FIDO Service");
+                    var services = await BleDevice.GetGattServicesForUuidAsync(fidoServiceUuid);
+                    if (services.Services.Count <= 0) {
+                        // サービス無し
+                        addLog("Error Connect FIDO Service");
+                        return;
+                    }
+                    Service_Fido = services.Services.First();
+                }
+
+                // Characteristicアクセス
+                // - コマンド送信ハンドラ設定
+                // - 応答受信ハンドラ設定
+                {
+                    // FIDO Service Revision(Read)
+                    await DebugMethods.OutputLog(Service_Fido, GattCharacteristicUuids.SoftwareRevisionString);
+
+                    // FIDO Control Point Length(Read-2byte)
+                    await DebugMethods.OutputLog(Service_Fido, new Guid("F1D0FFF3-DEAA-ECEE-B42F-C9BA7ED623BB"));
+
+                    // FIDO Service Revision Bitfield(Read/Write-1+byte)
+                    await DebugMethods.OutputLog(Service_Fido, new Guid("F1D0FFF4-DEAA-ECEE-B42F-C9BA7ED623BB"));
+
+                    // FIDO Status(Notiry) 受信データ
+                    {
+                        var characteristics = await Service_Fido.GetCharacteristicsForUuidAsync(new Guid("F1D0FFF2-DEAA-ECEE-B42F-C9BA7ED623BB"));
+                        if (characteristics.Characteristics.Count > 0) {
+                            this.Characteristic_Receive = characteristics.Characteristics.First();
+                            if (this.Characteristic_Receive == null) {
+                                Console.WriteLine("Characteristicに接続できない...");
+                            } else {
+                                if (this.Characteristic_Receive.CharacteristicProperties.HasFlag(GattCharacteristicProperties.Notify)) {
+                                    // イベントハンドラ追加
+                                    this.Characteristic_Receive.ValueChanged += characteristicChanged_OnReceiveFromDevice;
+
+                                    // これで有効になる
+                                    await this.Characteristic_Receive.WriteClientCharacteristicConfigurationDescriptorAsync(GattClientCharacteristicConfigurationDescriptorValue.Notify);
+                                }
                             }
                         }
                     }
-                }
 
-                // FIDO Control Point(Write) 送信データ
-                {
-                    var characteristics = await Service_Fido.GetCharacteristicsForUuidAsync(new Guid("F1D0FFF1-DEAA-ECEE-B42F-C9BA7ED623BB"));
-                    if (characteristics.Characteristics.Count > 0) {
-                        this.Characteristic_Send = characteristics.Characteristics.First();
-                        if (this.Characteristic_Send == null) {
-                            Console.WriteLine("Characteristicに接続できない...");
+                    // FIDO Control Point(Write) 送信データ
+                    {
+                        var characteristics = await Service_Fido.GetCharacteristicsForUuidAsync(new Guid("F1D0FFF1-DEAA-ECEE-B42F-C9BA7ED623BB"));
+                        if (characteristics.Characteristics.Count > 0) {
+                            this.Characteristic_Send = characteristics.Characteristics.First();
+                            if (this.Characteristic_Send == null) {
+                                Console.WriteLine("Characteristicに接続できない...");
+                            }
                         }
                     }
-                }
 
-                addLog("BLE FIDOキーと接続しました!");
-                addLog("");
+                    addLog("BLE FIDOキーと接続しました!");
+                    addLog("");
+                }
+            } catch (Exception ex) {
+                addLog($"Exception {ex.Message}");
+
             }
         }
 
@@ -292,11 +298,11 @@ namespace CTAPBLETool
             try {
                 // param
                 byte[] ClientDataHash = System.Text.Encoding.ASCII.GetBytes("this is challenge");
-                string RpId = "gebogebo.com";
-                string RpName = "geborp";
+                string RpId = "edoktor.com";
+                string RpName = "rpname";
                 string UserId = "12345678";
-                string UserName = "gebo";
-                string UserDisplayName = "gebo";
+                string UserName = "test";
+                string UserDisplayName = "test";
                 bool Option_rk = false;
                 bool Option_uv = true;
 
@@ -466,9 +472,10 @@ namespace CTAPBLETool
         {
             try {
                 // param
-                string RpId = "gebogebo.com";
+                string RpId = "edoktor.com";
                 byte[] ClientDataHash = System.Text.Encoding.ASCII.GetBytes("this is challenge");
-                byte[] AllowList_CredentialId = Common.HexStringToBytes("D2A464B2FDFB219245ED5C1E81FCEC8452915B3DB13BE0D608691F51909A2136331CE8663803E23A6B7B895F38B98B70A8165578391C571B45EF15EEF7282D36617CAA36931CBE6DF69A8166F18EB1ED0634B3D0055C186C794AF355464FE8A6");
+                byte[] AllowList_CredentialId = Common.HexStringToBytes("F0D377A096DE35C6BC6365FFDF3CAD2691817F83F903D51A522680CFF926A5E5CAA298381D7530059D477B67157EFE3C44A81751360FB4F0D0CFC86B20467DA79044435E1D6A78A802041F5D27FD9493F4666C4183C09566E584DE28492EF405");
+                //byte[] AllowList_CredentialId = null;
                 bool Option_up = true;
                 bool Option_uv = true;
 
